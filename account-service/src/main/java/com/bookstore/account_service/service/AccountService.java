@@ -2,11 +2,12 @@ package com.bookstore.account_service.service;
 
 import com.bookstore.account_service.dto.*;
 import com.bookstore.account_service.enums.ApiError;
+import com.bookstore.account_service.exception.ErrorLoginException;
+import com.bookstore.account_service.exception.UserExistException;
 import com.bookstore.account_service.model.Account;
 import com.bookstore.account_service.repository.AccountRepository;
 import com.bookstore.account_service.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,7 +42,7 @@ public class AccountService {
     }
 
     public APICustomize<LoginResponse> authenticateUser(LoginRequest loginRequest) {
-
+        try{
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
@@ -55,14 +56,16 @@ public class AccountService {
             LoginResponse response = new LoginResponse(userDetails.getUsername(), jwtToken, refreshToken);
 
             return new APICustomize<>(ApiError.OK.getCode(), ApiError.OK.getMessage(), response);
-
+        } catch (BadCredentialsException e) {
+            throw new ErrorLoginException("Sai tên đăng nhập hoặc mật khẩu!");
+        }
     }
 
     public APICustomize<RegisterResponse> register(RegisterRequest registerRequest) {
 
-//        if (accountRepository.existsByUsername(registerRequest.getUsername())) {
-//            throw new UserExistException("Tên đăng nhập đã tồn tại!");
-//        }
+        if (accountRepository.existsByUsername(registerRequest.getUsername())) {
+            throw new UserExistException("Tên đăng nhập đã tồn tại!");
+        }
 
         Account newUser = new Account();
         newUser.setUsername(registerRequest.getUsername());

@@ -20,19 +20,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private static final String[] ADMIN_ENDPOINTS = {
-            "/api/admin/**"
-    };
-
-    private static final String[] USER_ENDPOINTS = {
-            "/api/user/**"
-    };
-
-    private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/register",
-            "/api/login"
-    };
-
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
@@ -63,9 +50,10 @@ public class SecurityConfig {
                             .accessDeniedHandler(accessDeniedHandler); // Xử lý 403 Forbidden
                 })
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
-                        .requestMatchers(USER_ENDPOINTS).hasRole("USER")
+                        .requestMatchers("/eureka/**").permitAll()
+                        .requestMatchers("/api/account/register", "/api/account/login").permitAll()
+                        .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/account/user/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
