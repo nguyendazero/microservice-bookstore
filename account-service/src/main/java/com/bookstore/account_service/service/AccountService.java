@@ -83,4 +83,9 @@ public class AccountService {
 
         return new APICustomize<>(ApiError.CREATED.getCode(), ApiError.CREATED.getMessage(), response);
     }
+
+    public APICustomize<String> deleteAccount(long id){
+        accountRepository.deleteById(id);
+        return new APICustomize<>(ApiError.NO_CONTENT.getCode(), ApiError.NO_CONTENT.getMessage(), "Đã xóa thành công account with id = " + id);
+    }
 }

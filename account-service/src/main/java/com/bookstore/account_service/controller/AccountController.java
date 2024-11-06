@@ -3,6 +3,7 @@ package com.bookstore.account_service.controller;
 import com.bookstore.account_service.dto.*;
 import com.bookstore.account_service.service.AccountService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,4 +34,9 @@ public class AccountController {
         return ResponseEntity.status(Integer.parseInt(response.getStatusCode())).body(response.getResult());
     }
 
+    @DeleteMapping("/admin/delete/{id}")
+    public ResponseEntity<String> deleteAccount(@PathVariable long id) {
+        APICustomize<String> response = accountService.deleteAccount(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response.getResult());
+    }
 }
