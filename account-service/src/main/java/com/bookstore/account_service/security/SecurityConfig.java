@@ -50,11 +50,7 @@ public class SecurityConfig {
                             .accessDeniedHandler(accessDeniedHandler); // Xử lý 403 Forbidden
                 })
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                        .requestMatchers("/eureka/**").permitAll()
-                        .requestMatchers("/api/account/register", "/api/account/login").permitAll()
-                        .requestMatchers("/api/account/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/account/user/**").hasAnyRole("USER", "ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // Cho phép tất cả các request mà không cần xác thực
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -62,9 +58,7 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                 )
-                .csrf(csrf -> csrf.disable())
-                .addFilterBefore(authenticationJwtTokenFilter(),
-                        UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable());
 
         return http.build();
     }
