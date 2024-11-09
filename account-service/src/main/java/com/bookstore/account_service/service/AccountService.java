@@ -12,11 +12,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -42,24 +45,31 @@ public class AccountService {
     }
 
     public APICustomize<LoginResponse> authenticateUser(LoginRequest loginRequest) {
-        try{
+        try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
+            // Lấy danh sách roles từ authorities
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            // Tạo JWT token với roles
             String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 
             String refreshToken = jwtUtils.generateRefreshTokenFromUsername(userDetails);
 
-            LoginResponse response = new LoginResponse(userDetails.getUsername(), jwtToken, refreshToken);
+            LoginResponse response = new LoginResponse(userDetails.getUsername(), roles, jwtToken, refreshToken);
 
             return new APICustomize<>(ApiError.OK.getCode(), ApiError.OK.getMessage(), response);
         } catch (BadCredentialsException e) {
             throw new ErrorLoginException("Sai tên đăng nhập hoặc mật khẩu!");
         }
     }
+
 
     public APICustomize<RegisterResponse> register(RegisterRequest registerRequest) {
 

@@ -10,31 +10,30 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/account")
 @RequiredArgsConstructor
 public class AccountController {
 
     private final AccountService accountService;
 
-    @PostMapping("/login")
+    @PostMapping("/api/public/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         APICustomize<LoginResponse> response = accountService.authenticateUser(loginRequest);
         return ResponseEntity.status(Integer.parseInt(response.getStatusCode())).body(response);
     }
 
-    @PostMapping("/register")
+    @PostMapping("/api/public/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
         APICustomize<RegisterResponse> response = accountService.register(registerRequest);
         return ResponseEntity.status(Integer.parseInt(response.getStatusCode())).body(response);
     }
 
-    @GetMapping("/admin/accounts")
+    @GetMapping("/api/account/admin/accounts")
     public ResponseEntity<List<AccountsReponse>> accounts(){
         APICustomize<List<AccountsReponse>> response = accountService.accounts();
         return ResponseEntity.status(Integer.parseInt(response.getStatusCode())).body(response.getResult());
     }
 
-    @DeleteMapping("/admin/delete/{id}")
+    @DeleteMapping("/api/account/admin/delete/{id}")
     public ResponseEntity<String> deleteAccount(@PathVariable long id) {
         APICustomize<String> response = accountService.deleteAccount(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response.getResult());

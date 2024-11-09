@@ -1,20 +1,20 @@
 package com.bookstore.account_service.security;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
@@ -43,13 +43,32 @@ public class JwtUtils {
 
     public String generateTokenFromUsername(UserDetails userDetails) {
         String username = userDetails.getUsername();
-        return Jwts.builder()
+
+        // Lấy danh sách vai trò từ UserDetails
+        List<String> roleNames = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        // Log thông tin roles
+        System.out.println("Roles for user " + username + ": " + roleNames);
+
+        // Tạo token JWT với roles
+        String token = Jwts.builder()
                 .setSubject(username)
+                .claim("roles", roleNames)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(key())
+                .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
+
+
+        // Log token đã tạo
+        System.out.println("Generated Token: " + token);
+
+        return token;
     }
+
+
 
     public String generateRefreshTokenFromUsername(UserDetails userDetails) {
         String username = userDetails.getUsername();
@@ -78,11 +97,12 @@ public class JwtUtils {
 
     public boolean validateJwtToken(String authToken) {
         try {
-            System.out.println("Validate");
+            System.out.println("Validating token: " + authToken);
             Jwts.parserBuilder()
                     .setSigningKey(key())
                     .build()
                     .parseClaimsJws(authToken);
+            System.out.println("Token is valid");
             return true;
         } catch (MalformedJwtException e) {
             logger.error("Invalid JWT token: {}", e.getMessage());
@@ -95,5 +115,6 @@ public class JwtUtils {
         }
         return false;
     }
+
 
 }
