@@ -49,9 +49,6 @@ public class JwtUtils {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        // Log thông tin roles
-        System.out.println("Roles for user " + username + ": " + roleNames);
-
         // Tạo token JWT với roles
         String token = Jwts.builder()
                 .setSubject(username)
@@ -60,10 +57,6 @@ public class JwtUtils {
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
                 .compact();
-
-
-        // Log token đã tạo
-        System.out.println("Generated Token: " + token);
 
         return token;
     }

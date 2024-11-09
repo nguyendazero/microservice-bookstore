@@ -2,7 +2,6 @@ package com.bookstore.api_gateway.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +18,6 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,8 +33,8 @@ public class SecurityConfig {
         return http
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/public/**").permitAll()
-                        .pathMatchers("/api/account/admin/**").hasAuthority("ROLE_ADMIN")
-                        .pathMatchers("/api/account/user/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .pathMatchers("/api/account/admin/**", "/api/book/admin/**").hasAuthority("ROLE_ADMIN")
+                        .pathMatchers("/api/account/user/**", "/api/book/user/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         .anyExchange().authenticated()
                 )
@@ -52,38 +49,25 @@ public class SecurityConfig {
         public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
             String token = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-            // Log token nhận được
-            System.out.println("Received Token: " + token);
-
             // Nếu không có token hoặc token không phải là Bearer token, tiếp tục chain
             if (token == null || !token.startsWith("Bearer ")) {
                 return chain.filter(exchange);
             }
 
-            token = token.substring(7);  // Lấy token bỏ đi "Bearer "
+            token = token.substring(7);
 
             try {
-                // Log token đã được trích xuất
-                System.out.println("Extracted Token: " + token);
-
                 Claims claims = Jwts.parserBuilder()
-                        .setSigningKey(jwtSecret)  // Đảm bảo sử dụng secretKey giống nhau
+                        .setSigningKey(jwtSecret)
                         .build()
                         .parseClaimsJws(token)
                         .getBody();
 
-
-                // Log claims nhận được
-                System.out.println("Claims from Token: " + claims);
-
                 String username = claims.getSubject();
                 List<String> roles = claims.get("roles", List.class);
 
-                // Log roles
-                System.out.println("Roles from token: " + roles);
-
                 if (roles == null || roles.isEmpty()) {
-                    return chain.filter(exchange);  // Hoặc trả về lỗi 401 nếu cần thiết
+                    return chain.filter(exchange);
                 }
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -94,8 +78,6 @@ public class SecurityConfig {
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authToken));
 
             } catch (Exception e) {
-                // Log lỗi nếu có
-                System.out.println("Error decoding token: " + e.getMessage());
                 return exchange.getResponse().setComplete();
             }
         }

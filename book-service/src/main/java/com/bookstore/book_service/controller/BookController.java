@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/book")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class BookController {
 
@@ -24,12 +24,12 @@ public class BookController {
         return ResponseEntity.status(Integer.parseInt(response.getStatusCode())).body(response);
     }
 
-    @GetMapping("/admin/hello")
+    @GetMapping("/book/admin/hello")
     public ResponseEntity<?> helloAdmin(){
         return ResponseEntity.ok("hello Admin");
     }
 
-    @GetMapping("/user/hello")
+    @GetMapping("/book/user/hello")
     public ResponseEntity<?> helloUser(){
         return ResponseEntity.ok("hello User");
     }
