@@ -32,7 +32,7 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/api/public/**").permitAll()
+                        .pathMatchers("/api/account/public/**", "/api/book/public/**").permitAll()
                         .pathMatchers("/api/account/admin/**", "/api/book/admin/**").hasAuthority("ROLE_ADMIN")
                         .pathMatchers("/api/account/user/**", "/api/book/user/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 

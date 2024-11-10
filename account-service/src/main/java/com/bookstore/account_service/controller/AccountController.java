@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/account")
 public class AccountController {
 
     private final AccountService accountService;
@@ -28,13 +28,13 @@ public class AccountController {
         return ResponseEntity.status(Integer.parseInt(response.getStatusCode())).body(response);
     }
 
-    @GetMapping("/account/admin/accounts")
+    @GetMapping("/admin/accounts")
     public ResponseEntity<List<AccountsReponse>> accounts(){
         APICustomize<List<AccountsReponse>> response = accountService.accounts();
         return ResponseEntity.status(Integer.parseInt(response.getStatusCode())).body(response.getResult());
     }
 
-    @DeleteMapping("/account/admin/delete/{id}")
+    @DeleteMapping("/admin/delete/{id}")
     public ResponseEntity<String> deleteAccount(@PathVariable long id) {
         APICustomize<String> response = accountService.deleteAccount(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response.getResult());
