@@ -28,13 +28,28 @@ public class SecurityConfig {
     @Value("${spring.app.jwtSecret}")
     private String jwtSecret;
 
+    private static final String[] PUBLIC_ENDPOINTS = {
+            "/api/account/public/**",
+            "/api/book/public/**"
+    };
+
+    private static final String[] ADMIN_ENDPOINTS = {
+            "/api/account/admin/**",
+            "/api/book/admin/**"
+    };
+
+    private static final String[] USER_ENDPOINTS = {
+            "/api/account/user/**",
+            "/api/book/user/**"
+    };
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         return http
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/api/account/public/**", "/api/book/public/**").permitAll()
-                        .pathMatchers("/api/account/admin/**", "/api/book/admin/**").hasAuthority("ROLE_ADMIN")
-                        .pathMatchers("/api/account/user/**", "/api/book/user/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
+                        .pathMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .pathMatchers(ADMIN_ENDPOINTS).hasAuthority("ROLE_ADMIN")
+                        .pathMatchers(USER_ENDPOINTS).hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
 
                         .anyExchange().authenticated()
                 )
