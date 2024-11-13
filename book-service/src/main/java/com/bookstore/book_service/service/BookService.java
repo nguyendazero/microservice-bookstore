@@ -5,9 +5,11 @@ import com.bookstore.book_service.dto.AddBookRequest;
 import com.bookstore.book_service.dto.AddBookResponse;
 import com.bookstore.book_service.dto.BookResponse;
 import com.bookstore.book_service.enums.ApiError;
+import com.bookstore.book_service.event.AddBookEvent;
 import com.bookstore.book_service.model.Book;
 import com.bookstore.book_service.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.swing.text.AbstractDocument;
@@ -18,6 +20,7 @@ import java.util.List;
 public class BookService {
 
     private final BookRepository bookRepository;
+    private final KafkaTemplate<String, AddBookEvent> kafkaTemplate;
 
     public APICustomize<List<BookResponse>> books(){
         List<Book> books = bookRepository.findAll();
@@ -41,6 +44,8 @@ public class BookService {
 
 
         Book save = bookRepository.save(newBook);
+
+        kafkaTemplate.send("add-book", new AddBookEvent(newBook.getId(), newBook.getName(), newBook.getDescription(), newBook.getQuantity()));
 
         AddBookResponse response = new AddBookResponse(
                 save.getId(),

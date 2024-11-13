@@ -2,12 +2,14 @@ package com.bookstore.account_service.service;
 
 import com.bookstore.account_service.dto.*;
 import com.bookstore.account_service.enums.ApiError;
+import com.bookstore.account_service.event.RegisterEvent;
 import com.bookstore.account_service.exception.ErrorLoginException;
 import com.bookstore.account_service.exception.UserExistException;
 import com.bookstore.account_service.model.Account;
 import com.bookstore.account_service.repository.AccountRepository;
 import com.bookstore.account_service.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,6 +31,7 @@ public class AccountService {
     private final JwtUtils jwtUtils;
     private final PasswordEncoder passwordEncoder;
     private final AccountRepository accountRepository;
+    private final KafkaTemplate<String, RegisterEvent> kafkaTemplate;
 
     public APICustomize<List<AccountsReponse>> accounts() {
         List<Account> accounts = accountRepository.findAll();
@@ -84,6 +87,8 @@ public class AccountService {
         newUser.setRole("ROLE_USER");
 
         accountRepository.save(newUser);
+
+        kafkaTemplate.send("register", new RegisterEvent(newUser.getId(), newUser.getUsername(), newUser.getRole(), newUser.isEnabled()));
 
         RegisterResponse response = new RegisterResponse(
                 newUser.getUsername(),
